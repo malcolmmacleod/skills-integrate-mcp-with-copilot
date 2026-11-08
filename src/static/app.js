@@ -3,6 +3,53 @@ document.addEventListener("DOMContentLoaded", () => {
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
+  const themeToggle = document.getElementById("theme-toggle");
+  const themePreferenceKey = "mergington-theme";
+  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
+  let hasSavedTheme = false;
+
+  try {
+    const savedTheme = localStorage.getItem(themePreferenceKey);
+    if (savedTheme === "light" || savedTheme === "dark") {
+      document.documentElement.dataset.theme = savedTheme;
+      hasSavedTheme = true;
+    }
+  } catch (error) {
+    console.error("Could not load the saved theme:", error);
+  }
+
+  function updateThemeToggle() {
+    const isDark =
+      document.documentElement.dataset.theme === "dark" ||
+      (!document.documentElement.dataset.theme && systemTheme.matches);
+    themeToggle.setAttribute("aria-pressed", String(isDark));
+  }
+
+  themeToggle.addEventListener("click", () => {
+    const nextTheme =
+      document.documentElement.dataset.theme === "dark" ||
+      (!document.documentElement.dataset.theme && systemTheme.matches)
+        ? "light"
+        : "dark";
+    document.documentElement.dataset.theme = nextTheme;
+    hasSavedTheme = true;
+
+    try {
+      localStorage.setItem(themePreferenceKey, nextTheme);
+    } catch (error) {
+      console.error("Could not save the selected theme:", error);
+    }
+
+    updateThemeToggle();
+  });
+
+  systemTheme.addEventListener("change", () => {
+    if (!hasSavedTheme) {
+      updateThemeToggle();
+    }
+  });
+
+  updateThemeToggle();
 
   // Function to fetch activities from API
   async function fetchActivities() {
@@ -87,13 +134,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (response.ok) {
         messageDiv.textContent = result.message;
-        messageDiv.className = "success";
+        messageDiv.className = "message success";
 
         // Refresh activities list to show updated participants
         fetchActivities();
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
-        messageDiv.className = "error";
+        messageDiv.className = "message error";
       }
 
       messageDiv.classList.remove("hidden");
@@ -104,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 5000);
     } catch (error) {
       messageDiv.textContent = "Failed to unregister. Please try again.";
-      messageDiv.className = "error";
+      messageDiv.className = "message error";
       messageDiv.classList.remove("hidden");
       console.error("Error unregistering:", error);
     }
@@ -131,14 +178,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (response.ok) {
         messageDiv.textContent = result.message;
-        messageDiv.className = "success";
+        messageDiv.className = "message success";
         signupForm.reset();
 
         // Refresh activities list to show updated participants
         fetchActivities();
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
-        messageDiv.className = "error";
+        messageDiv.className = "message error";
       }
 
       messageDiv.classList.remove("hidden");
@@ -149,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 5000);
     } catch (error) {
       messageDiv.textContent = "Failed to sign up. Please try again.";
-      messageDiv.className = "error";
+      messageDiv.className = "message error";
       messageDiv.classList.remove("hidden");
       console.error("Error signing up:", error);
     }

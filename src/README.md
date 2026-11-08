@@ -6,6 +6,7 @@ A super simple FastAPI application that allows students to view and sign up for 
 
 - View all available extracurricular activities
 - Sign up for activities
+- Switch between light and dark themes; the app follows the system theme until a preference is selected, then remembers that choice across reloads
 
 ## Getting Started
 
